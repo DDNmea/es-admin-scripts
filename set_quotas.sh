@@ -212,7 +212,7 @@ function utils::get_uid() {
         utils::critical "User $user not found"
     fi
 
-    echo $UID
+    echo $OID
 }
 
 function utils::get_gid() {
@@ -240,7 +240,7 @@ function quotas::set() {
     lustre::fs::check "$PROJ_DIR"
 
     # Convert quotas in TB to KB
-    KBYTES=$((quota*1024*1024*1024))
+    KBYTES=$((QUOTA*1024*1024*1024))
 
     OID=$(utils::get_uid $USER)
     GID=$(utils::get_gid $GROUP)
@@ -255,9 +255,9 @@ function quotas::set() {
         utils::warning "Respecting \`$PROJ_DIR\` associated projid $PROJID"
     fi
 
-    echo "$MKDIR -p $PROJ_DIR" >> $__LUSTRE_COMMANDS
-    echo "$CHOWN -R $OID:$GID $PROJ_DIR" >> $__LUSTRE_COMMANDS
-    echo "$CHMOD -R $MODE $PROJ_DIR" >> $__LUSTRE_COMMANDS
+    echo "$MKDIR -p $PROJ_DIR"                  >> $__LUSTRE_COMMANDS
+    echo "$CHOWN -R $OID:$GID $PROJ_DIR"        >> $__LUSTRE_COMMANDS
+    echo "$CHMOD -R $MODE $PROJ_DIR"            >> $__LUSTRE_COMMANDS
     echo "$LFS project -p $PROJID -s $PROJ_DIR" >> $__LUSTRE_COMMANDS
     echo "$LFS setquota -p $PROJID -b $KBYTES -B $KBYTES $PROJ_DIR" >> $__LUSTRE_COMMANDS
 
@@ -280,8 +280,8 @@ function quotas::update() {
     fi
 
     local KBYTES=$(lustre::fs::get_dir_quota "$PROJ_DIR")
-    local DELTA=$((quota*1024*1024*1024))
-    case "${quota:0:1}" in
+    local DELTA=$((QUOTA*1024*1024*1024))
+    case "${QUOTA:0:1}" in
         "+")
             KBYTES=$((KBYTES + DELTA))
             ;;
