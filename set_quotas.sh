@@ -184,11 +184,11 @@ function lustre::fs::max_projid() {
 
     PROCFILE="/proc/fs/lustre/qmt/${FSNAME}-*/dt-0x0/glb-prj"
 
-    if [[ ! -f "${PROCFILE}" ]]; then
+    if [[ -z $(ls ${PROCFILE}) ]]; then
         utils::error "File $PROCFILE not found, are you on a lustre node ?"
     fi
 
-    MAX=$(${CAT} "${PROCFILE}" 2>/dev/null                                  \
+    MAX=$(${CAT} ${PROCFILE} 2>/dev/null                                  \
         | ${GREP} id                                                        \
         | ${AWK} '{print $3}'                                               \
         | ${SORT} -n                                                        \
