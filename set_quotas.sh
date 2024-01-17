@@ -30,6 +30,13 @@ __SHELL_PID=$$
 
 TIMESTAMP="[\$($DATE --rfc-3339=seconds)]"
 
+read -r -d '' SPEC_HEADER <<'EOF'
+# For project quota creation use the below format:
+# Project path	Quota(TB)	Group	User	Mode(Octal)
+# To update existing project quotas:
+# Project path	Quota(TB)
+EOF
+
 function utils::cleanup() {
     # Cleanup temporary files and unmount lustre filesystem
     $RM -f $__LUSTRE_COMMANDS
@@ -391,22 +398,28 @@ function main() {
                 INPUT="${OPTARG}"
                 ;;
             \?)
-                echo "Invalid option: -$OPTARG" >&2
+                echo "Invalid option: -${OPTARG}" >&2
                 utils::usage
                 return 1
                 ;;
         esac
     done
 
-    if [[ ! -f "$INPUT" ]] ; then
-        utils::error "Input file error: No such file: $INPUT"
+    if [[ ! -f "${INPUT}" ]] ; then
+        utils::error "Input file error: No such file: ${INPUT}"
         utils::usage
         return 1
     fi
 
     lustre::fs::mount
-    spec::parse "$INPUT"
+    spec::parse "${INPUT}"
     execute
+
+    # Overwrite input file
+    if [[ $? -eq 0 ]]; then
+        echo Success !
+        echo "${SPEC_HEADER}" > "${INPUT}"
+    fi
 }
 
 main $@
