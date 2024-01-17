@@ -86,12 +86,10 @@ There are two operation modes depending on the format of the spec:
     <project_dir> is the path to the project folder
     <quota> is the quota in TB
 
-    This will update the quota of the project folder. The quota can be
-    specified as an absolute value or as a relative value. If the quota is
-    specified as a relative value, it must be prefixed with a + or a - sign.
-    The quota will be updated by adding the relative value to the current
-    quota. If the quota is specified as an absolute value, the quota will be
-    set to the specified value.
+    This will update the quota of the project folder. The quota specified is
+    a relative value. The quota can be prefixed with a + or a - sign, and it
+    will be updated by adding or substracting the relative value to the
+    current quota.
 
 The two operation modes can be used in the same spec. Example:
 # Mountpoint	Quota(TB)	Group	User	Mode(Octal)
@@ -316,9 +314,6 @@ function quotas::update() {
     local KBYTES=$(lustre::fs::get_dir_quota "$PROJ_DIR")
     local DELTA=$((QUOTA*1024*1024*1024))
     case "${QUOTA:0:1}" in
-        "+")
-            KBYTES=$((KBYTES + DELTA))
-            ;;
         "-")
             # Ensure that the quota will not be negative
             if [[ $KBYTES -lt $((-1*DELTA)) ]]; then
@@ -328,7 +323,7 @@ current is $((KBYTES/1024/1024/1024)) TB ($KBYTES KB)"
             KBYTES=$((KBYTES + DELTA))
             ;;
         *)
-            KBYTES=$DELTA
+            KBYTES=$((KBYTES + DELTA))
             ;;
     esac
 
