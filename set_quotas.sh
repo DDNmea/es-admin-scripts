@@ -56,7 +56,7 @@ This program will create or update the project folders in the lustre
 filesystem named \`$FSNAME\` with the quotas specified in the quota input file
 given with the '-i' argument.
 EOF
-    
+
     if [[ -n "${DEFAULT_INPUT_FILE}" ]] ; then
         $CAT << EOF
 If '-i' is not specified, the input file defaults to ${DEFAULT_INPUT_FILE}.
@@ -381,13 +381,13 @@ function execute() {
 
 function main() {
     local INPUT="$DEFAULT_INPUT_FILE"
-	local OPT=
+    local OPT=
 
     while getopts ":hi:" OPT; do
         case "${OPT}" in
             h)
                 utils::usage
-				return 0
+                return 0
                 ;;
             i)
                 INPUT="${OPTARG}"
