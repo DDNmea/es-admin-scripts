@@ -4,6 +4,7 @@ FSNAME=testfs
 LUSTRE_MOUNTPOINT=/lustre/testfs/client
 LOGFILE=/tmp/quotas.log
 TMP_LOGFILE=/tmp/quotas.tmp.log
+DEFAULT_INPUT_FILE=
 
 #TODO Replace with absolute paths
 AWK=$(type -P awk)
@@ -95,6 +96,15 @@ function utils::critical() {
     fi
 
     kill -s TERM $__SHELL_PID
+}
+
+function utils::error() {
+    # Print an error message and kill the current shell, triggering cleanup
+    if [[ -n $FILE && -n $LINE_N ]]; then
+        echo "ERROR: $FILE:$LINE_N: $1" >&2
+    else
+        echo "ERROR: $1" >&2
+    fi
 }
 
 function utils::warning() {
@@ -354,13 +364,20 @@ function execute() {
 }
 
 function main() {
-    if [[ $# -ne 1 ]]; then
+    local INPUT="$DEFAULT_INPUT_FILE"
+
+    if [[ $# -ge 1 ]]; then
+        INPUT="$1"
+    fi
+
+    if [[ ! -f "$INPUT" ]] ; then
+        utils::error "Input file error: No such file: $INPUT"
         utils::usage
         exit 1
     fi
 
     lustre::fs::mount
-    spec::parse "$1"
+    spec::parse "$INPUT"
     execute
 }
 
