@@ -177,19 +177,23 @@ function lustre::fs::max_projid() {
     # Return the maximum defined project id for the filesystem
     lustre::fs::check
 
-    PROCFILE=/proc/fs/lustre/qmt/$FSNAME-*/dt-0x0/glb-prj
+    PROCFILE="/proc/fs/lustre/qmt/${FSNAME}-*/dt-0x0/glb-prj"
 
-    MAX=$($CAT $PROCFILE 2>/dev/null        \
-        | $GREP id                          \
-        | $AWK '{print $3}'                 \
-        | $SORT -n                          \
-        | $TAIL -n 1)
-
-    if [[ -z $MAX ]]; then
-        utils::critical "Unable to determine maximum projid, check $PROCFILE"
+    if [[ ! -f "${PROCFILE}" ]]; then
+        utils::error "File $PROCFILE not found, are you on a lustre node ?"
     fi
 
-    echo $MAX
+    MAX=$(${CAT} "${PROCFILE}" 2>/dev/null                                  \
+        | ${GREP} id                                                        \
+        | ${AWK} '{print $3}'                                               \
+        | ${SORT} -n                                                        \
+        | ${TAIL} -n 1)
+
+    if [[ -z ${MAX} ]]; then
+        utils::critical "Unable to determine maximum projid"
+    fi
+
+    echo ${MAX}
 }
 
 function lustre::fs::get_dir_projid() {
