@@ -43,10 +43,20 @@ trap utils::cleanup SIGINT SIGTERM EXIT
 
 function utils::usage() {
     $CAT << EOF
-Usage: $0 <quota_spec>
+Usage: $0 [-i quota_spec] [-h]
 
 This program will create or update the project folders in the lustre
-filesystem named \`$FSNAME\` with the quotas specified in <quota_spec>.
+filesystem named \`$FSNAME\` with the quotas specified in the quota input file
+given with the '-i' argument.
+EOF
+    
+    if [[ -n "${DEFAULT_INPUT_FILE}" ]] ; then
+        $CAT << EOF
+If '-i' is not specified, the input file defaults to ${DEFAULT_INPUT_FILE}.
+EOF
+    fi
+
+    $CAT << EOF
 There are two operation modes depending on the format of the spec:
 
 1. Create a new project folder with a quota
@@ -365,15 +375,29 @@ function execute() {
 
 function main() {
     local INPUT="$DEFAULT_INPUT_FILE"
+	local OPT=
 
-    if [[ $# -ge 1 ]]; then
-        INPUT="$1"
-    fi
+    while getopts ":hi:" OPT; do
+        case "${OPT}" in
+            h)
+                utils::usage
+				return 0
+                ;;
+            i)
+                INPUT="${OPTARG}"
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                utils::usage
+                return 1
+                ;;
+        esac
+    done
 
     if [[ ! -f "$INPUT" ]] ; then
         utils::error "Input file error: No such file: $INPUT"
         utils::usage
-        exit 1
+        return 1
     fi
 
     lustre::fs::mount
