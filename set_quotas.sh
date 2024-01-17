@@ -190,7 +190,8 @@ function lustre::fs::get_dir_quota() {
 
     PROJECT_ID=$(lustre::fs::get_dir_projid "$dir")
 
-    if [[ -z $PROJECT_ID ]]; then
+    # Return if the project id is null or default
+    if [[ -z $PROJECT_ID || $PROJECT_ID -eq 0 ]]; then
         echo 0
         return
     fi
@@ -247,7 +248,9 @@ function quotas::set() {
 
     # Check for a project id for the PROJ_DIR
     PROJID=$(lustre::fs::get_dir_projid "$PROJ_DIR")
-    if [[ -z $PROJID ]]; then
+
+    # If the PROJID is not set or if it is default (0), assign one
+    if [[ -z $PROJID || $PROJID -eq 0 ]]; then
         export MAX_PROJID=$((MAX_PROJID + 1))
         PROJID=$MAX_PROJID
     else
